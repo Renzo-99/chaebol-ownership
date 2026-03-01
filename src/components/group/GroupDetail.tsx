@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,9 +10,11 @@ import OwnershipGraph from "@/components/graph/OwnershipGraph";
 import CompanyPanel from "@/components/graph/CompanyPanel";
 import type { Company } from "@/types/database";
 
-function GroupPageInner() {
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id") ?? "";
+interface Props {
+  id: string;
+}
+
+export default function GroupDetail({ id }: Props) {
   const { data, loading, error } = useChaebolDetail(id);
   const { enrichedCompanies, loading: stockLoading } = useStockPrices(
     data?.companies ?? []
@@ -27,7 +28,6 @@ function GroupPageInner() {
     []
   );
 
-  // enrichedCompanies에서 최신 주가 반영된 company 가져오기
   const panelCompany =
     selectedCompany &&
     enrichedCompanies.find((c) => c.id === selectedCompany.id);
@@ -116,19 +116,5 @@ function GroupPageInner() {
         </AnimatePresence>
       </div>
     </div>
-  );
-}
-
-export default function GroupPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
-        </div>
-      }
-    >
-      <GroupPageInner />
-    </Suspense>
   );
 }
