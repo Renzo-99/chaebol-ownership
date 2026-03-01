@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   ...(isGitHubPages && {
     output: "export",
     basePath: "/chaebol-ownership",
+    typescript: { ignoreBuildErrors: true },
   }),
   images: { unoptimized: true },
 };

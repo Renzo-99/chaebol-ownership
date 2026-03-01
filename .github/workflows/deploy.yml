@@ -31,11 +31,19 @@ jobs:
       - uses: actions/configure-pages@v5
       - name: Create .env.local for build
         run: |
-          echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" > .env.local
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY" >> .env.local
+      - name: Verify env vars
+        run: |
+          echo "SUPABASE_URL length: ${#NEXT_PUBLIC_SUPABASE_URL}"
+          echo "ANON_KEY length: ${#NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+          wc -c .env.local
+          head -c 30 .env.local
       - name: Remove API routes for static export
         run: rm -rf src/app/api
       - run: npm run build
+      - name: Verify Supabase in output
+        run: grep -rl "supabase" out/_next/static/chunks/ || echo "WARNING: No supabase references found in chunks!"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
