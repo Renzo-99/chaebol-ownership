@@ -3,19 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fetchStockChart, type ChartData } from "@/lib/yahoo";
 import type { Company } from "@/types/database";
-
-interface ChartPoint {
-  time: number;
-  close: number;
-}
-
-interface ChartData {
-  code: string;
-  points: ChartPoint[];
-  previousClose: number;
-  currentPrice: number;
-}
 
 const RANGES = [
   { label: "1일", value: "1d" },
@@ -61,10 +50,9 @@ export default function CompanyPanel({ company, onClose }: Props) {
     if (!company.is_listed || !company.stock_code) return;
 
     setChartLoading(true);
-    fetch(`/api/stock/chart?code=${company.stock_code}&range=${range}`)
-      .then((r) => r.json())
-      .then((json) => {
-        if (json.data) setChart(json.data);
+    fetchStockChart(company.stock_code, range)
+      .then((data) => {
+        if (data) setChart(data);
       })
       .catch(() => {})
       .finally(() => setChartLoading(false));

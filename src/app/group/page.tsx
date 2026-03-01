@@ -1,6 +1,7 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { useState, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,12 +11,9 @@ import OwnershipGraph from "@/components/graph/OwnershipGraph";
 import CompanyPanel from "@/components/graph/CompanyPanel";
 import type { Company } from "@/types/database";
 
-export default function GroupPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+function GroupPageInner() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id") ?? "";
   const { data, loading, error } = useChaebolDetail(id);
   const { enrichedCompanies, loading: stockLoading } = useStockPrices(
     data?.companies ?? []
@@ -118,5 +116,19 @@ export default function GroupPage({
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function GroupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <GroupPageInner />
+    </Suspense>
   );
 }

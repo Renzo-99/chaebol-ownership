@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { fetchStockPrices } from "@/lib/yahoo";
 import type { Company } from "@/types/database";
 
 interface StockPrice {
@@ -32,15 +33,11 @@ export function useStockPrices(companies: Company[]) {
 
   const fetchPrices = useCallback(async () => {
     if (!codesKey) return;
+    const codes = codesKey.split(",");
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/stock?codes=${codesKey}`);
-      if (!response.ok) return;
-
-      const json = await response.json();
-      const data = json.data as StockPrice[];
-
+      const data = await fetchStockPrices(codes);
       const map: StockPriceMap = {};
       for (const item of data) {
         map[item.code] = item;

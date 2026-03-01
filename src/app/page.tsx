@@ -11,7 +11,7 @@ export default function Home() {
   const { chaebols, loading, error } = useChaebolList();
 
   const handleSelect = (id: string) => {
-    router.push(`/group/${id}/`);
+    router.push(`/group?id=${id}`);
   };
 
   return (
