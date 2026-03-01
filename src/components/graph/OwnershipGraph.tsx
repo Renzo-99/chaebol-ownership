@@ -233,6 +233,12 @@ export default function OwnershipGraph({ companies, links, onNodeClick }: Props)
         edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
+        zoomOnScroll
+        zoomOnPinch
+        panOnScroll={false}
+        panOnDrag
+        minZoom={0.1}
+        maxZoom={3}
       >
         <Background gap={20} color="#E5E8EB" size={1} />
         <Controls className="!rounded-[10px] !shadow-[var(--shadow-toss)] !border-gray-200" />
