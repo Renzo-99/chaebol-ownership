@@ -30,6 +30,8 @@ jobs:
           path: .next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           restore-keys: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
+      - name: Remove API routes for static export
+        run: rm -rf src/app/api
       - run: npm run build
         env:
           GITHUB_PAGES: "true"
