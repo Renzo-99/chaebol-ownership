@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { fetchStockPrices } from "@/lib/yahoo";
+import { fetchStockPrices as fetchViaProxy } from "@/lib/yahoo";
 import type { Company } from "@/types/database";
 
 interface StockPrice {
@@ -12,14 +12,30 @@ interface StockPrice {
 
 type StockPriceMap = Record<string, StockPrice>;
 
-const REFRESH_INTERVAL = 60_000; // 1분 간격 갱신
+const REFRESH_INTERVAL = 60_000;
+
+/** API 라우트로 주가 조회 (로컬/Vercel) */
+async function fetchViaApi(codes: string[]): Promise<StockPrice[]> {
+  const res = await fetch(`/api/stock?codes=${codes.join(",")}`);
+  if (!res.ok) throw new Error("API failed");
+  const json = await res.json();
+  return json.data ?? [];
+}
+
+/** API 우선 시도, 실패 시 Yahoo 프록시 fallback */
+async function fetchStockPrices(codes: string[]): Promise<StockPrice[]> {
+  try {
+    return await fetchViaApi(codes);
+  } catch {
+    return fetchViaProxy(codes);
+  }
+}
 
 export function useStockPrices(companies: Company[]) {
   const [prices, setPrices] = useState<StockPriceMap>({});
   const [loading, setLoading] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // 상장 기업의 종목코드만 추출 (안정적 참조)
   const stockCodes = useMemo(
     () =>
       companies
@@ -60,7 +76,6 @@ export function useStockPrices(companies: Company[]) {
     };
   }, [fetchPrices, codesKey]);
 
-  // Company에 주가 데이터를 매핑
   const enrichedCompanies: Company[] = companies.map((c) => {
     if (!c.stock_code || !prices[c.stock_code]) return c;
     const p = prices[c.stock_code];

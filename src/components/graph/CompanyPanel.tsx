@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { fetchStockChart, type ChartData } from "@/lib/yahoo";
+import { fetchStockChart as fetchChartViaProxy, type ChartData } from "@/lib/yahoo";
 import type { Company } from "@/types/database";
 
 const RANGES = [
@@ -45,17 +45,30 @@ export default function CompanyPanel({ company, onClose }: Props) {
     [company.id]
   );
 
-  // 차트 fetch
+  // 차트 fetch: API 우선, 실패 시 Yahoo 프록시 fallback
   useEffect(() => {
     if (!company.is_listed || !company.stock_code) return;
+    const code = company.stock_code;
 
-    setChartLoading(true);
-    fetchStockChart(company.stock_code, range)
-      .then((data) => {
+    async function load() {
+      setChartLoading(true);
+      try {
+        // API 라우트 우선 시도 (로컬/Vercel)
+        const res = await fetch(`/api/stock/chart?code=${code}&range=${range}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) { setChart(json.data); return; }
+        }
+        throw new Error("API unavailable");
+      } catch {
+        // fallback: Yahoo 프록시 (GitHub Pages)
+        const data = await fetchChartViaProxy(code, range);
         if (data) setChart(data);
-      })
-      .catch(() => {})
-      .finally(() => setChartLoading(false));
+      } finally {
+        setChartLoading(false);
+      }
+    }
+    load();
   }, [company.stock_code, company.is_listed, range]);
 
   // 캔버스에 차트 그리기
