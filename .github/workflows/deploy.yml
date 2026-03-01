@@ -33,17 +33,9 @@ jobs:
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL" > .env.local
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY" >> .env.local
-      - name: Verify env vars
-        run: |
-          echo "env.local line count:" && wc -l .env.local
-          echo "env.local byte count:" && wc -c .env.local
-          echo "URL set:" && test -n "$NEXT_PUBLIC_SUPABASE_URL" && echo "yes" || echo "no"
-          echo "KEY set:" && test -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" && echo "yes" || echo "no"
       - name: Remove API routes for static export
         run: rm -rf src/app/api
       - run: npm run build
-      - name: Verify Supabase in output
-        run: grep -rl "supabase" out/_next/static/chunks/ || echo "WARNING: No supabase references found in chunks!"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
