@@ -35,10 +35,10 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY" >> .env.local
       - name: Verify env vars
         run: |
-          echo "SUPABASE_URL length: ${#NEXT_PUBLIC_SUPABASE_URL}"
-          echo "ANON_KEY length: ${#NEXT_PUBLIC_SUPABASE_ANON_KEY}"
-          wc -c .env.local
-          head -c 30 .env.local
+          echo "env.local line count:" && wc -l .env.local
+          echo "env.local byte count:" && wc -c .env.local
+          echo "URL set:" && test -n "$NEXT_PUBLIC_SUPABASE_URL" && echo "yes" || echo "no"
+          echo "KEY set:" && test -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" && echo "yes" || echo "no"
       - name: Remove API routes for static export
         run: rm -rf src/app/api
       - run: npm run build
